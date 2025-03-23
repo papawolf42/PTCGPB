@@ -968,6 +968,16 @@ FindImageAndClick(X1, Y1, X2, Y2, searchVariation := "", imageName := "DEFAULT",
 				Reload
 			}
 		}
+		if(imageName = "Missions") { ; may input extra ESC and stuck at exit game
+			Path = %imagePath%Delete2.png
+			pNeedle := GetNeedle(Path)
+			; ImageSearch within the region
+			vRet := Gdip_ImageSearch(pBitmap, pNeedle, vPosXY, 118, 353, 135, 390, searchVariation)
+			if (vRet = 1) {
+				adbClick(74, 353)
+				Delay(1)
+			}
+		}
 		Gdip_DisposeImage(pBitmap)
 		if(imageName = "Points" || imageName = "Home") { ;look for level up ok "button"
 			LevelUp()
@@ -3203,7 +3213,7 @@ DoWonderPick() {
 			adbClick(110, 369)
 		}
 		else if(FindOrLoseImage(191, 393, 211, 411, , "Shop", 1, failSafeTime))
-			adbInputEvent("111") ;send ESC
+			adbClick(139, 492)
 		else
 			break
 		failSafeTime := (A_TickCount - failSafe) // 1000
