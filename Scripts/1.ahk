@@ -928,10 +928,10 @@ FindImageAndClick(X1, Y1, X2, Y2, searchVariation := "", imageName := "DEFAULT",
 				failSafe := A_TickCount
 			}
 		}
-		Path = %imagePath%Error1.png
+		Path = %imagePath%Error.png
 		pNeedle := GetNeedle(Path)
 		; ImageSearch within the region
-		vRet := Gdip_ImageSearch(pBitmap, pNeedle, vPosXY, 15, 155, 270, 420, searchVariation)
+		vRet := Gdip_ImageSearch(pBitmap, pNeedle, vPosXY, 120, 187, 155, 210, searchVariation)
 		if (vRet = 1) {
 			CreateStatusMessage("Error message in " . scriptName " Clicking retry..." )
 			LogToFile("Error message in " scriptName " Clicking retry..." )
