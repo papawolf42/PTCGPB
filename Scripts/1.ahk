@@ -264,7 +264,7 @@ if(DeadCheck = 1){
             DoTutorial()
 
         ;    SquallTCGP 2025.03.12 -     Adding the delete method 5 Pack (Fast) to the wonder pick check.
-        if(deleteMethod = "5 Pack" || deleteMethod = "5 Pack (Fast)" || (injectMethod && !loadedAccount))
+        if(deleteMethod = "5 Pack" || deleteMethod = "5 Pack (Fast)" || deleteMethod = "13 Pack" || (injectMethod && !loadedAccount))
             wonderPicked := DoWonderPick()
 
         friendsAdded := AddFriends()
@@ -287,7 +287,7 @@ if(DeadCheck = 1){
             ;                         just to get around the checking for a level after opening a pack. This change is made based on the
             ;                         5p-no delete community mod created by DietPepperPhD in the discord server.
 
-            if(deleteMethod != "5 Pack (Fast)" && !injectMethod) {
+            if(deleteMethod = "5 Pack" || packMethod) {
                 friendsAdded := AddFriends(true)		
 				SelectPack("HGPack")
 				PackOpening()
@@ -303,6 +303,35 @@ if(DeadCheck = 1){
             else {
                 HourglassOpening(true)
             }
+			
+			if(deleteMethod = "13 Pack" || !loadAccount) {
+				;-----------------------------
+				;if error during mission collection, try commenting the first line and uncommenting the second
+				HomeAndMission()
+				;HomeAndMission(0,true)
+				;-----------------------------
+							
+				SelectPack("HGPack")
+				PackOpening() ;6
+				HourglassOpening(true) ;7
+				
+				HomeAndMission()
+				SelectPack("HGPack")
+				PackOpening() ;8
+				HourglassOpening(true) ;9
+				
+				HomeAndMission()
+				SelectPack("HGPack")
+				PackOpening() ;10
+				HourglassOpening(true) ;11
+				
+				HomeAndMission(1)
+				SelectPack("HGPack")
+				PackOpening() ;12
+				HomeAndMission(1)
+				SelectPack("HGPack")
+				PackOpening() ;13
+			}
         }
 
         if (nukeAccount && !keepAccount && !injectMethod) {
@@ -377,6 +406,57 @@ if(DeadCheck = 1){
 }
 return
 
+
+
+HomeAndMission(homeonly := 0, completeSecondMisson=false) {
+	Sleep, 250
+	failSafe := A_TickCount
+	failSafeTime := 0
+	Leveled := 0
+	Loop {
+		if(!Leveled)
+			Leveled := LevelUp()
+		else
+			LevelUp()
+		FindImageAndClick(191, 393, 211, 411, , "Shop", 146, 470, 500, 1)
+		if(FindImageAndClick(120, 188, 140, 208, , "Album", 79, 86 , 500, 1)){
+			FindImageAndClick(191, 393, 211, 411, , "Shop", 142, 488, 500)
+			break
+		}
+		failSafeTime := (A_TickCount - failSafe) // 1000
+	}
+	if(!homeonly){
+	FindImageAndClick(191, 393, 211, 411, , "Shop", 142, 488, 500)
+	FindImageAndClick(180, 498, 190, 508, , "Mission_dino1", 261, 478, 1000)
+	if (completeSecondMisson){
+		FindImageAndClick(136, 158, 156, 190, , "Mission_dino2", 150, 390, 1000)
+		}
+	else {
+		FindImageAndClick(136, 158, 156, 190, , "Mission_dino2", 150, 286, 1000)
+		}
+	failSafe := A_TickCount
+	failSafeTime := 0
+	Loop {
+		Delay(1)
+		adbClick(139, 424) ;clicks complete mission
+		Delay(1)
+		clickButton := FindOrLoseImage(145, 447, 258, 480, 80, "Button", 0, failSafeTime)
+		if(clickButton) {
+			adbClick(110, 369)
+		}
+		else if(FindOrLoseImage(191, 393, 211, 411, , "Shop", 1, failSafeTime)) {
+			adbInputEvent("111") ;send ESC
+			sleep, 1500
+		}
+		else
+			break
+		failSafeTime := (A_TickCount - failSafe) // 1000
+		CreateStatusMessage("In failsafe for WonderPick. " . failSafeTime "/45 seconds")
+		LogToFile("In failsafe for WonderPick. " . failSafeTime "/45 seconds")
+	}
+	}
+	return Leveled
+}
 
 clearMissionCache() {
     adbShell.StdIn.WriteLine("rm /data/data/jp.pokemon.pokemontcgp/files/UserPreferences/v1/MissionUserPrefs")
