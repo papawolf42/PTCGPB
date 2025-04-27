@@ -284,7 +284,7 @@ if(DeadCheck = 1 && !injectMethod){
         if(!injectMethod || !loadedAccount)
             HourglassOpening() ;deletemethod check in here at the start
 
-        if(wonderPicked) {
+        if(wonderPicked && !loadedAccount) {
             ; SquallTCGP 2025.03.12 - Added a check to not add friends if the delete method is 5 Pack (Fast). When using this method (5 Pack (Fast)),
             ;                         it goes to the social menu and clicks the home button to exit (instead of opening all packs directly)
             ;                         just to get around the checking for a level after opening a pack. This change is made based on the
@@ -306,36 +306,36 @@ if(DeadCheck = 1 && !injectMethod){
             else {
                 HourglassOpening(true)
             }
+		}
+		
+		if(deleteMethod = "13 Pack" || (injectMethod && !loadedAccount) || (deleteMethod = "Inject 10P" && loadedAccount)) {
+			;-----------------------------
+			;if error during mission collection, try commenting the first line and uncommenting the second
+			HomeAndMission()
+			;HomeAndMission(0,true)
+			;-----------------------------
+						
+			SelectPack("HGPack")
+			PackOpening() ;6
+			HourglassOpening(true) ;7
 			
-			if(deleteMethod = "13 Pack" || !loadAccount) {
-				;-----------------------------
-				;if error during mission collection, try commenting the first line and uncommenting the second
-				HomeAndMission()
-				;HomeAndMission(0,true)
-				;-----------------------------
-							
-				SelectPack("HGPack")
-				PackOpening() ;6
-				HourglassOpening(true) ;7
-				
-				HomeAndMission()
-				SelectPack("HGPack")
-				PackOpening() ;8
-				HourglassOpening(true) ;9
-				
-				HomeAndMission()
-				SelectPack("HGPack")
-				PackOpening() ;10
-				HourglassOpening(true) ;11
-				
-				HomeAndMission(1)
-				SelectPack("HGPack")
-				PackOpening() ;12
-				HomeAndMission(1)
-				SelectPack("HGPack")
-				PackOpening() ;13
-			}
-        }
+			HomeAndMission()
+			SelectPack("HGPack")
+			PackOpening() ;8
+			HourglassOpening(true) ;9
+			
+			HomeAndMission()
+			SelectPack("HGPack")
+			PackOpening() ;10
+			HourglassOpening(true) ;11
+			
+			HomeAndMission(1)
+			SelectPack("HGPack")
+			PackOpening() ;12
+			HomeAndMission(1)
+			SelectPack("HGPack")
+			PackOpening() ;13
+		}
 
         if (nukeAccount && !keepAccount && !injectMethod) {
             CreateStatusMessage("Deleting account...",,,, false)
@@ -349,7 +349,10 @@ if(DeadCheck = 1 && !injectMethod){
             loadedAccount := loadAccount()
 
         if (loadedAccount){
-			packs := 2
+			if(deleteMethod = "Inject 10P")
+				packs := 10
+			else
+				packs := 2
 		} else {
             if (deleteMethod = "3 Pack")
                 packs := 3
@@ -388,6 +391,7 @@ if(DeadCheck = 1 && !injectMethod){
 
             if (stopToggle) {
                 CreateStatusMessage("Stopping...",,,, false)
+				;TODO force stop, remove account
                 ExitApp
             }
 
@@ -400,6 +404,7 @@ if(DeadCheck = 1 && !injectMethod){
 
             if (stopToggle) {
                 CreateStatusMessage("Stopping...",,,, false)
+				;TODO force stop, remove account
                 ExitApp
             }
 

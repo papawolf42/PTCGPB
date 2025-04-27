@@ -289,8 +289,10 @@ else if (deleteMethod = "5 Pack (Fast)")
     defaultDelete := 4
 else if (deleteMethod = "13 Pack")
     defaultDelete := 5
+else if (deleteMethod = "Inject 10P")
+    defaultDelete := 6
 ;    SquallTCGP 2025.03.12 -     Adding the delete method 5 Pack (Fast) to the delete method dropdown list.
-Gui, Add, DropDownList, vdeleteMethod gdeleteSettings choose%defaultDelete% x575 y48 w100 Background2A2A2A cWhite, 5 Pack|3 Pack|Inject|5 Pack (Fast)|13 Pack
+Gui, Add, DropDownList, vdeleteMethod gdeleteSettings choose%defaultDelete% x575 y48 w100 Background2A2A2A cWhite, 5 Pack|3 Pack|Inject|5 Pack (Fast)|13 Pack|Inject 10P
 Gui, Add, Checkbox, % (packMethod ? "Checked" : "") " vpackMethod x520 y80 " . sectionColor, 1 Pack Method
 Gui, Add, Checkbox, % (nukeAccount ? "Checked" : "") " vnukeAccount x520 y100 " . sectionColor, Menu Delete Account
 
