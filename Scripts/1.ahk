@@ -280,20 +280,19 @@ if(DeadCheck = 1){
             HourglassOpening() ;deletemethod check in here at the start
 
         if(wonderPicked) {
-
             ; SquallTCGP 2025.03.12 - Added a check to not add friends if the delete method is 5 Pack (Fast). When using this method (5 Pack (Fast)),
             ;                         it goes to the social menu and clicks the home button to exit (instead of opening all packs directly)
             ;                         just to get around the checking for a level after opening a pack. This change is made based on the
             ;                         5p-no delete community mod created by DietPepperPhD in the discord server.
 
             if(deleteMethod != "5 Pack (Fast)" && !injectMethod) {
-                friendsAdded := AddFriends(true)
+                friendsAdded := AddFriends(true)		
+				SelectPack("HGPack")
+				PackOpening()
             } else {
-                FindImageAndClick(120, 500, 155, 530, , "Social", 143, 518, 500)
-                FindImageAndClick(20, 500, 55, 530, , "Home", 40, 516, 500)
+				HourglassOpening(true)
             }
-            SelectPack("HGPack")
-            PackOpening()
+			
             if(packMethod) {
                 friendsAdded := AddFriends(true)
                 SelectPack("HGPack")
@@ -677,15 +676,25 @@ AddFriends(renew := false, getFC := false) {
 }
 
 ChooseTag() {
-    FindImageAndClick(120, 500, 155, 530, , "Social", 143, 518, 500)
-    FindImageAndClick(20, 500, 55, 530, , "Home", 40, 516, 500)
-    FindImageAndClick(209, 277, 225, 292, , "Profile", 143, 95, 500)
-    FindImageAndClick(205, 310, 220, 319, , "ChosenTag", 143, 306, 1000)
-    FindImageAndClick(209, 277, 225, 292, , "Profile", 143, 505, 1000)
-    if (FindOrLoseImage(145, 140, 157, 155, , "Eevee", 1)) {
-        FindImageAndClick(163, 200, 173, 207, , "ChooseEevee", 147, 207, 1000)
-        FindImageAndClick(53, 218, 63, 228, , "Badge", 143, 466, 500)
-    }
+	FindImageAndClick(120, 500, 155, 530, , "Social", 143, 518, 500)
+	failSafe := A_TickCount
+	failSafeTime := 0
+	Loop {
+		FindImageAndClick(20, 500, 55, 530, , "Home", 40, 516, 500, 2)
+		LevelUp()
+		if(FindImageAndClick(203, 272, 237, 300, , "Profile", 143, 95, 500, 2, failSafeTime))
+			break
+		failSafeTime := (A_TickCount - failSafe) // 1000
+		CreateStatusMessage("In failsafe for Profile. " . failSafeTime "/45 seconds")
+		LogToFile("In failsafe for Profile. " . failSafeTime "/45 seconds")
+	}
+	FindImageAndClick(205, 310, 220, 319, , "ChosenTag", 143, 306, 1000)
+	FindImageAndClick(53, 218, 63, 228, , "Badge", 143, 466, 500)
+	FindImageAndClick(203, 272, 237, 300, , "Profile", 61, 112, 500)
+	if(FindOrLoseImage(145, 140, 157, 155, , "Eevee", 1)) {
+		FindImageAndClick(163, 200, 173, 207, , "ChooseEevee", 147, 207, 1000)
+		FindImageAndClick(53, 218, 63, 228, , "Badge", 143, 466, 500)
+	}
 }
 
 EraseInput(num := 0, total := 0) {
@@ -940,10 +949,10 @@ FindImageAndClick(X1, Y1, X2, Y2, searchVariation := "", imageName := "DEFAULT",
                 failSafe := A_TickCount
             }
         }
-        Path = %imagePath%Error1.png
+        Path = %imagePath%Error.png
         pNeedle := GetNeedle(Path)
         ; ImageSearch within the region
-        vRet := Gdip_ImageSearch(pBitmap, pNeedle, vPosXY, 15, 155, 270, 420, searchVariation)
+        vRet := Gdip_ImageSearch(pBitmap, pNeedle, vPosXY, 120, 187, 155, 210, searchVariation)
         if (vRet = 1) {
             CreateStatusMessage("Error message in " . scriptName . ". Clicking retry...",,,, false)
             adbClick(82, 389)
@@ -978,6 +987,18 @@ FindImageAndClick(X1, Y1, X2, Y2, searchVariation := "", imageName := "DEFAULT",
                 Reload
             }
         }
+		
+        if(imageName = "Missions") { ; may input extra ESC and stuck at exit game
+            Path = %imagePath%Delete2.png
+            pNeedle := GetNeedle(Path)
+            ; ImageSearch within the region
+            vRet := Gdip_ImageSearch(pBitmap, pNeedle, vPosXY, 118, 353, 135, 390, searchVariation)
+            if (vRet = 1) {
+                adbClick(74, 353)
+                Delay(1)
+            }
+        }
+		
         Gdip_DisposeImage(pBitmap)
         if(imageName = "Points" || imageName = "Home") { ;look for level up ok "button"
             LevelUp()
@@ -2956,7 +2977,8 @@ DoWonderPick() {
             adbClick(110, 369)
         }
         else if(FindOrLoseImage(191, 393, 211, 411, , "Shop", 1, failSafeTime))
-            adbInputEvent("111") ;send ESC
+            ;adbInputEvent("111") ;send ESC
+			adbClick(139, 492)
         else
             break
         failSafeTime := (A_TickCount - failSafe) // 1000
