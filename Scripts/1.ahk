@@ -191,6 +191,8 @@ if(injectMethod) {
     nukeAccount := false
 }
 
+clearMissionCache()
+
 if(!injectMethod || !loadedAccount)
     restartGameInstance("Initializing bot...", false)
 
@@ -210,6 +212,7 @@ if(DeadCheck = 1){
     Reload
 }else{
     Loop {
+		clearMissionCache()
         Randmax := packArray.Length()
         Random, rand, 1, Randmax
         openPack := packArray[rand]
@@ -373,6 +376,14 @@ if(DeadCheck = 1){
     }
 }
 return
+
+
+clearMissionCache() {
+    adbShell.StdIn.WriteLine("rm /data/data/jp.pokemon.pokemontcgp/files/UserPreferences/v1/MissionUserPrefs")
+    waitadb()
+	;TODO delete all user preferences?
+}
+
 
 RemoveFriends() {
     global friendIDs, friended
@@ -1111,6 +1122,7 @@ restartGameInstance(reason, RL := true){
     } else {
         adbShell.StdIn.WriteLine("am force-stop jp.pokemon.pokemontcgp")
         waitadb()
+		clearMissionCache()
         if (!RL && DeadCheck = 0) {
             adbShell.StdIn.WriteLine("rm /data/data/jp.pokemon.pokemontcgp/shared_prefs/deviceAccount:.xml") ; delete account data
         }
