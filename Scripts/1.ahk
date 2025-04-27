@@ -313,10 +313,16 @@ if(DeadCheck = 1){
         if (injectMethod)
             loadedAccount := loadAccount()
 
-        if (!loadedAccount)
-            if (deleteMethod = "5 Pack" || packMethod)
+        if (loadedAccount){
+			packs := 2
+		} else {
+            if (deleteMethod = "3 Pack")
+                packs := 3
+            else if (deleteMethod = "5 Pack" || deleteMethod = "5 Pack (fast)")
                 packs := 5
-
+			else
+				packs := 13
+		}
         IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
 
         ; BallCity 2025.02.21 - Keep track of additional metrics
@@ -1266,6 +1272,20 @@ menuDeleteStart() {
 }
 
 CheckPack() {
+    ; Update pack count.
+
+    ; SquallTCGP 2025.03.12 - Just checking the packs count and setting them to 0 if it's number of packs is 3.
+    ;                         This applies to any Delete Method except 5 Pack (Fast). This change is made based
+    ;                         on the 5p-no delete community mod created by DietPepperPhD in the discord server.
+    if (deleteMethod = "5 Pack") {
+        if (packs = 3)
+            packs := 0
+    }
+
+    packs += 1
+    if (packMethod)
+        packs := 1
+		
 	if(!friendIDs && friend = "" && !s4tEnabled)
 		return false
 
@@ -1275,20 +1295,6 @@ CheckPack() {
             break
         Delay(1)
     }
-
-    ; Update pack count.
-
-    ; SquallTCGP 2025.03.12 - Just checking the packs count and setting them to 0 if it's number of packs is 3.
-    ;                         This applies to any Delete Method except 5 Pack (Fast). This change is made based
-    ;                         on the 5p-no delete community mod created by DietPepperPhD in the discord server.
-    if (deleteMethod != "5 Pack (Fast)") {
-        if (packs = 3)
-            packs := 0
-    }
-
-    packs += 1
-    if (packMethod)
-        packs := 1
 
     ; Define a variable to contain whatever is found based on settings.
     foundLabel := false
