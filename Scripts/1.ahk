@@ -371,6 +371,12 @@ return
 
 RemoveFriends() {
     global friendIDs, friended
+	
+	if(!friendIDs && friend = "") {
+		friended := false
+		return false
+	}
+	
     failSafe := A_TickCount
     failSafeTime := 0
     Loop {
@@ -508,6 +514,10 @@ AddFriends(renew := false, getFC := false) {
     friended := true
     failSafe := A_TickCount
     failSafeTime := 0
+	
+	if(!getFC && !friendIDs && friendID = "")
+		return false
+	
     Loop {
         if(count > waitTime) {
             break
@@ -1257,6 +1267,9 @@ menuDeleteStart() {
 }
 
 CheckPack() {
+	if(!friendIDs && friend = "" && !s4tEnabled)
+		return false
+
     ; Wait for cards to render before checking.
     Loop {
         if (FindBorders("lag") = 0)

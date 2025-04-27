@@ -748,7 +748,10 @@ Start:
     ; Download a new Main ID file prior to running the rest of the below
     if (mainIdsURL != "") {
         DownloadFile(mainIdsURL, "ids.txt")
-    }
+    } else {
+		if(FileExist("ids.txt"))
+            FileDelete, ids.txt
+	}
 
     ; Run main before instances to account for instance start delay
     if (runMain) {
