@@ -206,11 +206,14 @@ adbSwipeY := Round((327 - 44) / 489 * 960)
 global adbSwipeParams := adbSwipeX1 . " " . adbSwipeY . " " . adbSwipeX2 . " " . adbSwipeY . " " . swipeSpeed
 
 if(DeadCheck = 1){
-    friended:= true
-    menuDeleteStart()
     IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
-    Reload
-}else{
+}
+if(DeadCheck = 1 && !injectMethod){
+    friended:= true
+	menuDeleteStart()
+	Reload
+} else {
+	;in injection mode, we don't need to reload
     Loop {
 		clearMissionCache()
         Randmax := packArray.Length()
@@ -1185,6 +1188,11 @@ resetWindows(){
 }
 
 restartGameInstance(reason, RL := true){
+	;initialize and new run (only not inject or not loaded), RL = false
+	;delete device account only when new run, only not inject or not loaded, and no deadcheck
+	;godpack, RL = godPack
+	;stuckat RL = true
+	
     AppendToJsonFile(packs)
 
     if (Debug)
@@ -1205,6 +1213,7 @@ restartGameInstance(reason, RL := true){
 		clearMissionCache()
         if (!RL && DeadCheck = 0) {
             adbShell.StdIn.WriteLine("rm /data/data/jp.pokemon.pokemontcgp/shared_prefs/deviceAccount:.xml") ; delete account data
+			;TODO improve friend list cluter with deadcheck/stuck at, for injection. need to check also loadAccount at the beggining
         }
         waitadb()
         adbShell.StdIn.WriteLine("am start -n jp.pokemon.pokemontcgp/com.unity3d.player.UnityPlayerActivity")
@@ -1212,13 +1221,16 @@ restartGameInstance(reason, RL := true){
         Sleep, 5000
 
         if (RL) {
-            if (menuDeleteStart()) {
-                IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
-                logMessage := "\n" . username . "\n[" . (starCount ? starCount : "0") . "/5][" . (packs ? packs : 0) . "P][" . openPack . "] " . (invalid ? invalid . " God Pack" : "Some sort of pack") . " found in instance: " . scriptName . "\nFile name: " . accountFile . "\nGot stuck doing something. Check Log_" . scriptName . ".txt."
-                LogToFile(Trim(StrReplace(logMessage, "\n", " ")))
-                ; Logging to Discord is temporarily disabled until all of the scenarios which could cause the script to end up here are fully understood.
-                ;LogToDiscord(logMessage,, true)
-            }
+			;if(!injectMethod || !loadedAccount) {
+			if(!injectMethod) {
+				if (menuDeleteStart()) {
+					IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
+					logMessage := "\n" . username . "\n[" . (starCount ? starCount : "0") . "/5][" . (packs ? packs : 0) . "P][" . openPack . "] " . (invalid ? invalid . " God Pack" : "Some sort of pack") . " found in instance: " . scriptName . "\nFile name: " . accountFile . "\nGot stuck doing something. Check Log_" . scriptName . ".txt."
+					LogToFile(Trim(StrReplace(logMessage, "\n", " ")))
+					; Logging to Discord is temporarily disabled until all of the scenarios which could cause the script to end up here are fully understood.
+					;LogToDiscord(logMessage,, true)
+				}
+			}
             LogToFile("Restarted game for instance " . scriptName . ". Reason: " reason, "Restart.txt")
 
             Reload
@@ -1879,16 +1891,6 @@ GodPackFound(validity) {
 
 loadAccount() {
     CreateStatusMessage("Loading account...",,,, false)
-    currentDate := A_Now
-    year := SubStr(currentDate, 1, 4)
-    month := SubStr(currentDate, 5, 2)
-    day := SubStr(currentDate, 7, 2)
-
-    daysSinceBase := (year - 1900) * 365 + Floor((year - 1900) / 4)
-    daysSinceBase += MonthToDays(year, month)
-    daysSinceBase += day
-
-    remainder := Mod(daysSinceBase, 3)
 
     saveDir := A_ScriptDir "\..\Accounts\Saved\" . winTitle
 

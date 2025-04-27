@@ -807,8 +807,10 @@ Start:
 
         ; Clear out the last run time so that our monitor script doesn't try to kill and refresh this instance right away
         metricFile := A_ScriptDir . "\Scripts\" . A_Index . ".ini"
+
         if (FileExist(metricFile)) {
             IniWrite, 0, %metricFile%, Metrics, LastEndEpoch
+            IniWrite, 0, %metricFile%, UserSettings, DeadCheck
         }
 
         Run, %Command%
