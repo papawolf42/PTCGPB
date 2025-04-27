@@ -205,7 +205,7 @@ global adbSwipeParams := adbSwipeX1 . " " . adbSwipeY . " " . adbSwipeX2 . " " .
 
 if(DeadCheck = 1){
     friended:= true
-    menuDeleteStart()
+    ;menuDeleteStart()
     IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
     Reload
 }else{
@@ -304,7 +304,7 @@ if(DeadCheck = 1){
 
         if (nukeAccount && !keepAccount && !injectMethod) {
             CreateStatusMessage("Deleting account...",,,, false)
-            menuDelete()
+            ;menuDelete()
         } else if (friended) {
             CreateStatusMessage("Unfriending...",,,, false)
             RemoveFriends()
@@ -856,11 +856,6 @@ FindImageAndClick(X1, Y1, X2, Y2, searchVariation := "", imageName := "DEFAULT",
             Y1 := 130
             X2 := 174
             Y2 := 155
-        } else if (imageName = "Profile") { ; ChangeTag GP found
-            X1 := 213
-            Y1 := 273
-            X2 := 226
-            Y2 := 286
         } else if (imageName = "ChosenTag") { ; ChangeTag GP found
             X1 := 218
             Y1 := 307
@@ -1080,158 +1075,9 @@ restartGameInstance(reason, RL := true){
         adbShell.StdIn.WriteLine("am start -n jp.pokemon.pokemontcgp/com.unity3d.player.UnityPlayerActivity")
         waitadb()
         Sleep, 5000
-
-        if (RL) {
-            if (menuDeleteStart()) {
-                IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
-                logMessage := "\n" . username . "\n[" . (starCount ? starCount : "0") . "/5][" . (packs ? packs : 0) . "P][" . openPack . "] " . (invalid ? invalid . " God Pack" : "Some sort of pack") . " found in instance: " . scriptName . "\nFile name: " . accountFile . "\nGot stuck doing something. Check Log_" . scriptName . ".txt."
-                LogToFile(Trim(StrReplace(logMessage, "\n", " ")))
-                ; Logging to Discord is temporarily disabled until all of the scenarios which could cause the script to end up here are fully understood.
-                ;LogToDiscord(logMessage,, true)
-            }
-            LogToFile("Restarted game for instance " . scriptName . ". Reason: " reason, "Restart.txt")
-
-            Reload
-        }
     }
 }
 
-menuDelete() {
-    sleep, %Delay%
-    failSafe := A_TickCount
-    failSafeTime := 0
-    Loop
-    {
-        sleep, %Delay%
-        sleep, %Delay%
-        adbClick(245, 518)
-        if(FindImageAndClick(90, 260, 126, 290, , "Settings", , , , 1, failSafeTime)) ;wait for settings menu
-            break
-        sleep, %Delay%
-        sleep, %Delay%
-        adbClick(50, 100)
-        failSafeTime := (A_TickCount - failSafe) // 1000
-        CreateStatusMessage("Waiting for Settings`n(" . failSafeTime . " seconds)")
-    }
-    Sleep,%Delay%
-    FindImageAndClick(24, 158, 57, 189, , "Account", 140, 440, 2000) ;wait for other menu
-    Sleep,%Delay%
-    FindImageAndClick(56, 435, 108, 460, , "Account2", 79, 256, 1000) ;wait for account menu
-    Sleep,%Delay%
-
-    failSafe := A_TickCount
-    failSafeTime := 0
-    Loop {
-        failSafe := A_TickCount
-        failSafeTime := 0
-        Loop {
-            clickButton := FindOrLoseImage(75, 340, 195, 530, 40, "Button2", 0, failSafeTime)
-            if(!clickButton) {
-                ; fix https://discord.com/channels/1330305075393986703/1354775917288882267/1355090394307887135
-                clickImage := FindOrLoseImage(200, 340, 250, 530, 60, "DeleteAll", 0, failSafeTime)
-                if(clickImage) {
-                    StringSplit, pos, clickImage, `,  ; Split at ", "
-                    if (scaleParam = 287) {
-                        pos2 += 5
-                    }
-                    adbClick(pos1, pos2)
-                }
-                else {
-                    adbClick(230, 506)
-                }
-                Delay(1)
-                failSafeTime := (A_TickCount - failSafe) // 1000
-                CreateStatusMessage("Waiting to click delete`n(" . failSafeTime . "/45 seconds)")
-            }
-            else {
-                break
-            }
-            Sleep,%Delay%
-        }
-        StringSplit, pos, clickButton, `,  ; Split at ", "
-        if (scaleParam = 287) {
-            pos2 += 5
-        }
-        adbClick(pos1, pos2)
-        break
-        failSafeTime := (A_TickCount - failSafe) // 1000
-        CreateStatusMessage("Waiting to click delete`n(" . failSafeTime . "/45 seconds)")
-    }
-
-    Sleep, 2500
-}
-
-menuDeleteStart() {
-    global friended
-    if(keepAccount) {
-        return keepAccount
-    }
-    if(friended) {
-        FindImageAndClick(65, 195, 100, 215, , "Platin", 18, 109, 2000) ; click mod settings
-        if(setSpeed = 3)
-            FindImageAndClick(182, 170, 194, 190, , "Three", 187, 180) ; click mod settings
-        else
-            FindImageAndClick(100, 170, 113, 190, , "Two", 107, 180) ; click mod settings
-        Delay(1)
-        adbClick(41, 296)
-        Delay(1)
-    }
-    failSafe := A_TickCount
-    failSafeTime := 0
-    Loop {
-        if(!friended)
-            break
-        adbClick(255, 83)
-        if(FindOrLoseImage(105, 396, 121, 406, , "Country", 0, failSafeTime)) { ;if at country continue
-            break
-        }
-        else if(FindOrLoseImage(20, 120, 50, 150, , "Menu", 0, failSafeTime)) { ; if the clicks in the top right open up the game settings menu then continue to delete account
-            Sleep,%Delay%
-            FindImageAndClick(56, 435, 108, 460, , "Account2", 79, 256, 1000) ;wait for account menu
-            Sleep,%Delay%
-            failSafe := A_TickCount
-            failSafeTime := 0
-            Loop {
-                clickButton := FindOrLoseImage(75, 340, 195, 530, 80, "Button", 0, failSafeTime)
-                if(!clickButton) {
-                    clickImage := FindOrLoseImage(200, 340, 250, 530, 60, "DeleteAll", 0, failSafeTime)
-                    if(clickImage) {
-                        StringSplit, pos, clickImage, `,  ; Split at ", "
-                        if (scaleParam = 287) {
-                            pos2 += 5
-                        }
-                        adbClick(pos1, pos2)
-                    }
-                    else {
-                        adbClick(230, 506)
-                    }
-                    Delay(1)
-                    failSafeTime := (A_TickCount - failSafe) // 1000
-                    CreateStatusMessage("Waiting to click delete`n(" . failSafeTime . "/45 seconds)")
-                }
-                else {
-                    break
-                }
-                Sleep,%Delay%
-            }
-            StringSplit, pos, clickButton, `,  ; Split at ", "
-            if (scaleParam = 287) {
-                pos2 += 5
-            }
-            adbClick(pos1, pos2)
-            break
-            failSafeTime := (A_TickCount - failSafe) // 1000
-            CreateStatusMessage("Waiting to click delete`n(" . failSafeTime . "/45 seconds)")
-        }
-        CreateStatusMessage("Looking for Country/Menu")
-        Delay(1)
-        failSafeTime := (A_TickCount - failSafe) // 1000
-        CreateStatusMessage("Waiting for Country/Menu`n(" . failSafeTime . "/45 seconds)")
-    }
-    if(loadedAccount) {
-        FileDelete, %loadedAccount%
-    }
-}
 
 CheckPack() {
     ; Wait for cards to render before checking.
@@ -1304,42 +1150,40 @@ CheckPack() {
     }
 
     ; Check for 2-star cards.
-    if (!CheckShiningPackOnly || openPack = "Shining") {
-        foundTrainer := false
-        foundRainbow := false
-        foundFullArt := false
-        2starCount := false
+    foundTrainer := false
+    foundRainbow := false
+    foundFullArt := false
+    2starCount := false
 
-        if (TrainerCheck && !foundLabel) {
-            foundTrainer := FindBorders("trainer")
-            if (foundTrainer)
-                foundLabel := "Trainer"
-        }
-        if (RainbowCheck && !foundLabel) {
-            foundRainbow := FindBorders("rainbow")
-            if (foundRainbow)
-                foundLabel := "Rainbow"
-        }
-        if (FullArtCheck && !foundLabel) {
-            foundFullArt := FindBorders("fullart")
-            if (foundFullArt)
-                foundLabel := "Full Art"
-        }
-        if (PseudoGodPack && !foundLabel) {
-            2starCount := FindBorders("trainer") + FindBorders("rainbow") + FindBorders("fullart")
-            if (2starCount > 1)
-                foundLabel := "Double two star"
+    if (TrainerCheck && !foundLabel) {
+        foundTrainer := FindBorders("trainer")
+        if (foundTrainer)
+            foundLabel := "Trainer"
+    }
+    if (RainbowCheck && !foundLabel) {
+        foundRainbow := FindBorders("rainbow")
+        if (foundRainbow)
+            foundLabel := "Rainbow"
+    }
+    if (FullArtCheck && !foundLabel) {
+        foundFullArt := FindBorders("fullart")
+        if (foundFullArt)
+            foundLabel := "Full Art"
+    }
+    if (PseudoGodPack && !foundLabel) {
+        2starCount := FindBorders("trainer") + FindBorders("rainbow") + FindBorders("fullart")
+        if (2starCount > 1)
+            foundLabel := "Double two star"
+    }
+
+    if (foundLabel) {
+        if (loadedAccount) {
+            FileDelete, %loadedAccount% ;delete xml file from folder if using inject method
+            IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
         }
 
-        if (foundLabel) {
-            if (loadedAccount) {
-                FileDelete, %loadedAccount% ;delete xml file from folder if using inject method
-                IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
-            }
-
-            FoundStars(foundLabel)
-            restartGameInstance(foundLabel . " found. Continuing...", "GodPack")
-        }
+        FoundStars(foundLabel)
+        restartGameInstance(foundLabel . " found. Continuing...", "GodPack")
     }
 
     ; Check for tradeable cards.
@@ -1756,7 +1600,17 @@ loadAccount() {
     daysSinceBase += MonthToDays(year, month)
     daysSinceBase += day
 
+    hour := SubStr(A_Now, 9, 2)
+    hour := hour + 0
+
+    if (hour < 12)
+        ampm := 0
+    else
+        ampm := 1
+
     remainder := Mod(daysSinceBase, 3)
+
+    remainder := remainder * 2 + ampm
 
     saveDir := A_ScriptDir "\..\Accounts\Saved\" . remainder . "\" . winTitle
 
@@ -2860,7 +2714,17 @@ createAccountList(instance) {
     daysSinceBase += MonthToDays(year, month)
     daysSinceBase += day
 
+    hour := SubStr(A_Now, 9, 2)
+    hour := hour + 0
+
+    if (hour < 12)
+        ampm := 0
+    else
+        ampm := 1
+
     remainder := Mod(daysSinceBase, 3)
+
+    remainder := remainder * 2 + ampm
 
     saveDir := A_ScriptDir "\..\Accounts\Saved\" . remainder . "\" . instance
     outputTxt := saveDir . "\list.txt"
