@@ -261,9 +261,8 @@ if(DeadCheck = 1){
             DoTutorial()
 
         ;    SquallTCGP 2025.03.12 -     Adding the delete method 5 Pack (Fast) to the wonder pick check.
-        if(deleteMethod = "5 Pack" || deleteMethod = "5 Pack (Fast)" || packMethod)
-            if(!loadedAccount)
-                wonderPicked := DoWonderPick()
+        if(deleteMethod = "5 Pack" || deleteMethod = "5 Pack (Fast)" || (injectMethod && !loadedAccount))
+            wonderPicked := DoWonderPick()
 
         friendsAdded := AddFriends()
         SelectPack("First")
@@ -2952,6 +2951,7 @@ DoWonderPick() {
     }
     failSafe := A_TickCount
     failSafeTime := 0
+	;TODO thanks and wonder pick 5 times for missions
     Loop {
         adbClick(146, 494)
         if(FindOrLoseImage(233, 486, 272, 519, , "Skip", 0, failSafeTime) || FindOrLoseImage(240, 80, 265, 100, , "WonderPick", 0, failSafeTime))
