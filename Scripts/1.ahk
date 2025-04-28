@@ -363,9 +363,6 @@ if(DeadCheck = 1 && !injectMethod){
             RemoveFriends()
         }
 
-        if (injectMethod)
-            loadedAccount := loadAccount()
-
         if (loadedAccount){
 			if(deleteMethod = "Inject 10P")
 				packs := 10
@@ -428,6 +425,10 @@ if(DeadCheck = 1 && !injectMethod){
 
             CreateStatusMessage("New Run",,,, false)
         }
+		
+        if (injectMethod)
+            loadedAccount := loadAccount()
+
     }
 }
 return
