@@ -242,9 +242,14 @@ if(DeadCheck = 1 && !injectMethod){
             dateChange := true
         }
         
-		;always call it. it will updates the list every 1h
-        createAccountList(scriptName)
-        
+		
+        if(dateChange)
+	   ; This resets the counter for liking showcase to 5
+	     IniWrite, 5, %A_ScriptDir%\..\Settings.ini, UserSettings, showcaseLikes ;###✔️✔️
+
+	    ;always call it. it will updates the list every 1h
+             createAccountList(scriptName)
+
         FindImageAndClick(65, 195, 100, 215, , "Platin", 18, 109, 2000) ; click mod settings
         if(setSpeed = 3)
             FindImageAndClick(182, 170, 194, 190, , "Three", 187, 180) ; click mod settings
@@ -780,7 +785,42 @@ AddFriends(renew := false, getFC := false) {
                 }
             }
             FindImageAndClick(120, 500, 155, 530, , "Social", 143, 518, 500)
-            FindImageAndClick(20, 500, 55, 530, , "Home", 40, 516, 500)
+IniRead, showcaseNumber, %A_ScriptDir%\..\Settings.ini, UserSettings, showcaseLikes, 1
+			if ( showcaseNumber > 0)
+			{
+				showcaseNumber -= 1
+				IniWrite, %showcaseNumber%, %A_ScriptDir%\..\Settings.ini, UserSettings, showcaseLikes
+				Delay(5)
+				; Liking friend showcase script
+				; clicking showcase button
+				adbClick(80, 400)
+				Delay(10)
+				;MsgBox, showcaseNumber is > 0
+				Loop, Read, %A_ScriptDir%\..\showcase_ids.txt
+				{
+					showcaseID := Trim(A_LoopReadLine)        
+					; clicking friend id search
+					adbClick(220, 467)
+					Delay(3)
+					; clicking search bar
+					adbClick(152, 272)
+					Delay(3)
+					;pasting id
+					adbInput(showcaseID)
+					Delay(1)
+					;MsgBox, % showcaseID
+					;pressing ok
+					adbClick(212, 384)
+					Delay(3)
+					;pressing like on showcase
+					adbClick(133, 192)
+					Delay(3)
+					;going back to community showcases
+					adbClick(133, 492)
+					Delay(3)
+				}
+			}
+                    FindImageAndClick(20, 500, 55, 530, , "Home", 40, 516, 500)
         }
         CreateStatusMessage("Waiting for friends to accept request`n(" . count . "/" . waitTime . " seconds)")
         sleep, 1000
@@ -2455,6 +2495,16 @@ DoTutorial() {
     failSafe := A_TickCount
     failSafeTime := 0
     Loop {
+    ; Check for AccountName in Settings.ini
+    IniRead, accountNameValue, %A_ScriptDir%\..\Settings.ini, UserSettings, AccountName, ERROR
+    
+    ; Use AccountName if it exists and isn't empty
+    if (accountNameValue != "ERROR" && accountNameValue != "") {
+        Random, randomNum, 1, 500 ; Generate random number from 1 to 500
+        username := accountNameValue . "-" . randomNum
+        username := SubStr(username, 1, 14)  ; max character limit
+        LogToFile("Using AccountName: " . username)
+    } else {
         fileName := A_ScriptDir . "\..\usernames.txt"
         if(FileExist(fileName))
             name := ReadFile("usernames")
@@ -2463,8 +2513,11 @@ DoTutorial() {
 
         Random, randomIndex, 1, name.MaxIndex()
         username := name[randomIndex]
-        username := SubStr(username, 1, 14)  ;max character limit
-        adbInput(username)
+        username := SubStr(username, 1, 14)  ; max character limit
+        LogToFile("Using random username: " . username)
+    }
+    
+    adbInput(username)
         Delay(1)
         if(FindImageAndClick(121, 490, 161, 520, , "Return", 185, 372, , 10)) ;click through until return button on open pack
             break
