@@ -21,6 +21,7 @@ WinHide % "ahk_id " DllCall("GetConsoleWindow", "ptr")
 global winTitle, changeDate, failSafe, openPack, Delay, failSafeTime, StartSkipTime, Columns, failSafe, scriptName, GPTest, StatusText, defaultLanguage, setSpeed, jsonFileName, pauseToggle, SelectedMonitorIndex, swipeSpeed, godPack, scaleParam, deleteMethod, packs, FriendID, friendIDs, Instances, username, friendCode, stopToggle, friended, runMain, Mains, showStatus, injectMethod, packMethod, loadedAccount, nukeAccount, CheckShiningPackOnly, TrainerCheck, FullArtCheck, RainbowCheck, ShinyCheck, dateChange, foundGP, friendsAdded, minStars, PseudoGodPack, Palkia, Dialga, Mew, Pikachu, Charizard, Mewtwo, packArray, CrownCheck, ImmersiveCheck, InvalidCheck, slowMotion, screenShot, accountFile, invalid, starCount, keepAccount, minStarsA1Charizard, minStarsA1Mewtwo, minStarsA1Pikachu, minStarsA1a, minStarsA2Dialga, minStarsA2Palkia, minStarsA2a, minStarsA2b
 global DeadCheck
 global s4tEnabled, s4tSilent, s4t3Dmnd, s4t4Dmnd, s4t1Star, s4tGholdengo, s4tWP, s4tWPMinCards, s4tDiscordWebhookURL, s4tDiscordUserId, s4tSendAccountXml
+global avgtotalSeconds
 
 scriptName := StrReplace(A_ScriptName, ".ahk")
 winTitle := scriptName
@@ -221,27 +222,39 @@ if(DeadCheck = 1 && !injectMethod){
         openPack := packArray[rand]
         friended := false
         IniWrite, 1, %A_ScriptDir%\..\HeartBeat.ini, HeartBeat, Instance%scriptName%
-        FormatTime, CurrentTime,, HHmm
-
-        StartTime := changeDate - 45 ; 12:55 AM2355
-        EndTime := changeDate + 5 ; 1:01 AM
-
-        ; Adjust for crossing midnight
-        if (StartTime < 0)
-            StartTime += 2400
-        if (EndTime >= 2400)
-            EndTime -= 2400
-
-        Random, randomTime, 3, 7
-
-        While(((CurrentTime - StartTime >= 0) && (CurrentTime - StartTime <= randomTime)) || ((EndTime - CurrentTime >= 0) && (EndTime - CurrentTime <= randomTime)))
-        {
-            CreateStatusMessage("I need a break... Sleeping until " . changeDate + randomTime,,,, false)
-            FormatTime, CurrentTime,, HHmm ; Update the current time after sleep
-            Sleep, 5000
-            dateChange := true
-        }
         
+		changeDate := getChangeDateTime() ; get server reset time
+		
+		if (avgtotalSeconds > 0 ) {
+			StartTime := changeDate
+			StartTime += -(1.5*avgtotalSeconds), Seconds
+			EndTime := changeDate
+			EndTime += (1.5*avgtotalSeconds), Seconds
+		} else {
+			StartTime := changeDate
+			StartTime += -10, minutes
+			EndTime := changeDate
+			EndTime += 5, minutes
+		}
+		
+		StartCurrentTimeDiff := A_Now
+		EnvSub, StartCurrentTimeDiff, %StartTime%, Seconds
+		EndCurrentTimeDiff := A_Now
+		EnvSub, EndCurrentTimeDiff, %EndTime%, Seconds
+		
+		dateChange := false
+		
+		while (StartCurrentTimeDiff > 0 && EndCurrentTimeDiff < 0) {
+            CreateStatusMessage("I need a break... Sleeping until " . EndTime ,,,, false)
+            dateChange := true
+            Sleep, 5000
+			
+			StartCurrentTimeDiff := A_Now
+			EnvSub, StartCurrentTimeDiff, %StartTime%, Seconds
+			EndCurrentTimeDiff := A_Now
+			EnvSub, EndCurrentTimeDiff, %EndTime%, Seconds
+		}
+		
 		
         if(dateChange)
 	   ; This resets the counter for liking showcase to 5
@@ -3160,44 +3173,24 @@ DoWonderPick() {
 }
 
 getChangeDateTime() {
-    ; Get system timezone bias and determine local time for 1 AM EST
-
-    ; Retrieve timezone information from Windows registry
-    RegRead, TimeBias, HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\TimeZoneInformation, Bias
-    RegRead, DltBias, HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\TimeZoneInformation, ActiveTimeBias
-
-    ; Convert registry values to integers
-    Bias := TimeBias + 0
-    DltBias := DltBias + 0
-
-    ; Determine if Daylight Saving Time (DST) is active
-    IsDST := (Bias != DltBias) ? 1 : 0
-
-    ; EST is UTC-5 (300 minutes offset)
-    EST_Offset := 300
-
-    ; Use the correct local offset (DST or Standard)
-    Local_Offset := (IsDST) ? DltBias : Bias
-
-    ; Convert 1 AM EST to UTC (UTC = EST + 5 hours)
-    UTC_Time := 1 + EST_Offset / 60  ; 06:00 UTC
-
-    ; Convert UTC to local time
-    Local_Time := UTC_Time - (Local_Offset / 60)
-
-    ; Round to ensure we get whole numbers
-    Local_Time := Floor(Local_Time)
-
-    ; Handle 24-hour wrap-around
-    If (Local_Time < 0)
-        Local_Time += 24
-    Else If (Local_Time >= 24)
-        Local_Time -= 24
-
-    ; Format output as HHMM
-    FormattedTime := (Local_Time < 10 ? "0" : "") . Local_Time . "00"
-
-    Return FormattedTime
+	offset := A_Now
+	currenttimeutc := A_NowUTC
+	EnvSub, offset, %currenttimeutc%, Hours   ;offset from local timezone to UTC
+	
+    resetTime := SubStr(A_Now, 1, 8) "060000" ;today at 6am [utc] zero seconds is the reset time at UTC
+	resetTime += offset, Hours                ;reset time in local timezone
+	
+	;find the closest reset time
+	currentTime := A_Now
+	timeToReset := resetTime
+	EnvSub, timeToReset, %currentTime%, Hours
+	if(timeToReset > 12) {
+		resetTime += -1, Days
+	} else if (timeToReset < -12) {
+		resetTime += 1, Days
+	}
+	
+    return resetTime
 }
 
 
