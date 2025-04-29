@@ -2768,6 +2768,7 @@ StartBot:
         metricFile := A_ScriptDir . "\Scripts\" . A_Index . ".ini"
         if (FileExist(metricFile)) {
             IniWrite, 0, %metricFile%, Metrics, LastEndEpoch
+            IniWrite, 0, %metricFile%, UserSettings, DeadCheck
         }
 
         Run, %Command%
@@ -2910,7 +2911,11 @@ StartBot:
        if(Mod(A_Index, 10) = 0) {
           if(mainIdsURL != "") {
               DownloadFile(mainIdsURL, "ids.txt")
-          }
+          } else {
+			  if(FileExist("ids.txt"))
+				FileDelete, ids.txt
+		  }
+		  
           if(showcaseEnabled && showcaseURL != "") {
              DownloadFile(showcaseURL, "showcase_codes.txt")
           }
