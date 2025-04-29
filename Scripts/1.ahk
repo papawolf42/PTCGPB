@@ -376,6 +376,7 @@ if(DeadCheck = 1 && !injectMethod){
 			else
 				packs := 13
 		}
+		AppendToJsonFile(packs)
         IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
 
         ; BallCity 2025.02.21 - Keep track of additional metrics
@@ -415,7 +416,6 @@ if(DeadCheck = 1 && !injectMethod){
             ; Reached here because:
             ; - using the inject method
             ; - or the account was deleted because no desirable packs were found during the last run
-            AppendToJsonFile(packs)
 
             if (stopToggle) {
                 CreateStatusMessage("Stopping...",,,, false)
@@ -1254,7 +1254,6 @@ restartGameInstance(reason, RL := true){
 	;godpack, RL = godPack
 	;stuckat RL = true
 	
-    AppendToJsonFile(packs)
 
     if (Debug)
         CreateStatusMessage("Restarting game reason:`n" . reason)
