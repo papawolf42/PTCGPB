@@ -490,7 +490,7 @@ clearMissionCache() {
 RemoveFriends() {
     global friendIDs, friended
 	
-	if(!friendIDs && friend = "") {
+	if(!friendIDs && friendID = "") {
 		friended := false
 		return false
 	}
