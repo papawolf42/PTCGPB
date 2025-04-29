@@ -2782,7 +2782,50 @@ SelectPack(HG := false) {
     } else {
         packx := 80
     }
-    FindImageAndClick(233, 400, 264, 428, , "Points", packx, packy)
+	
+	if(HG = "First"){
+		failSafe := A_TickCount
+		failSafeTime := 0
+		Loop {
+			adbClick(packx, packy)
+			Delay(1)
+			if(FindOrLoseImage(233, 400, 264, 428, , "Points", 0, failSafeTime)) {
+				break
+			}
+			else if(!renew && !getFC) {
+				clickButton := FindOrLoseImage(75, 340, 195, 530, 80, "Button", 0)
+				if(clickButton) {
+					StringSplit, pos, clickButton, `,  ; Split at ", "
+					if (scaleParam = 287) {
+						pos2 += 5
+					}
+					adbClick(pos1, pos2)
+				}
+			}
+			else if(FindOrLoseImage(175, 165, 255, 235, , "Hourglass3", 0)) {
+				;TODO hourglass tutorial still broken after injection
+				Delay(3)
+				adbClick(146, 441) ; 146 440
+				Delay(3)
+				adbClick(146, 441)
+				Delay(3)
+				adbClick(146, 441)
+				Delay(3)
+
+				FindImageAndClick(98, 184, 151, 224, , "Hourglass1", 168, 438, 500, 5) ;stop at hourglasses tutorial 2
+				Delay(1)
+
+				adbClick(203, 436) ; 203 436
+				FindImageAndClick(236, 198, 266, 226, , "Hourglass2", 180, 436, 500) ;stop at hourglasses tutorial 2 180 to 203?
+			}
+			
+			failSafeTime := (A_TickCount - failSafe) // 1000
+			CreateStatusMessage("Waiting for Points`n(" . failSafeTime . "/90 seconds)")
+		}
+	} else {
+		FindImageAndClick(233, 400, 264, 428, , "Points", packx, packy)
+	}
+	
     if(openPack = "Pikachu" || openPack = "Mewtwo" || openPack = "Charizard" || openPack = "Mew") {
         FindImageAndClick(115, 140, 160, 155, , "SelectExpansion", 245, 475)
         packy := 442
