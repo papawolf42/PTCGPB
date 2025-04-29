@@ -405,12 +405,6 @@ if(DeadCheck = 1 && !injectMethod){
             ; - or the current account opened a desirable pack and shouldn't be deleted
             saveAccount("All")
 
-            if (stopToggle) {
-                CreateStatusMessage("Stopping...",,,, false)
-				;TODO force stop, remove account
-                ExitApp
-            }
-
             restartGameInstance("New Run", false)
         } else {
             ; Reached here because:
@@ -1266,6 +1260,12 @@ restartGameInstance(reason, RL := true){
         LogToFile("Restarted game for instance " . scriptName . ". Reason: " reason, "Restart.txt")
         IniWrite, 0, %A_ScriptDir%\%scriptName%.ini, UserSettings, DeadCheck
 
+		if (stopToggle) {
+			CreateStatusMessage("Stopping...",,,, false)
+			;TODO force stop, remove account
+			ExitApp
+		}
+			
         Reload
     } else {
         adbShell.StdIn.WriteLine("am force-stop jp.pokemon.pokemontcgp")
@@ -1293,8 +1293,19 @@ restartGameInstance(reason, RL := true){
 			}
             LogToFile("Restarted game for instance " . scriptName . ". Reason: " reason, "Restart.txt")
 
+            if (stopToggle) {
+                CreateStatusMessage("Stopping...",,,, false)
+				;TODO force stop, remove account
+                ExitApp
+            }
             Reload
         }
+		
+		if (stopToggle) {
+			CreateStatusMessage("Stopping...",,,, false)
+			;TODO force stop, remove account
+			ExitApp
+		}
     }
 }
 
@@ -1950,6 +1961,13 @@ GodPackFound(validity) {
 }
 
 loadAccount() {
+
+	if (stopToggle) {
+		CreateStatusMessage("Stopping...",,,, false)
+		;TODO force stop, remove account
+		ExitApp
+	}
+	
     CreateStatusMessage("Loading account...",,,, false)
 
     saveDir := A_ScriptDir "\..\Accounts\Saved\" . winTitle
